@@ -3,66 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Odds Board</title>
-    <!-- Using Bootstrap 5 for core layout -->
+    <title>Mobile-First Odds Dashboard</title>
     <link href="https://cdn.jsdelivr.net" rel="stylesheet">
     <style>
-        body { background-color: #f4f6f9; padding: 40px 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f4f6f9; padding: 20px; font-family: system-ui, -apple-system, sans-serif; }
         
-        /* Section Header */
-        .game-section { margin-bottom: 35px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; }
-        .section-header { 
-            background: #1e3a8a; 
-            color: white; 
-            padding: 18px 25px; 
-        }
-        .matchup-text { font-size: 1.3rem; font-weight: 700; }
-        .time-text { color: #cbd5e1; font-size: 0.95rem; }
+        .game-section { margin-bottom: 30px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none; background: white; }
+        .section-header { background: #1e3a8a; color: white; padding: 15px 20px; }
+        .matchup-text { font-size: 1.1rem; font-weight: 700; }
+        .time-text { color: #cbd5e1; font-size: 0.85rem; }
 
-        /* Table Headers (Kept Spaced) */
-        .table thead th { 
-            background-color: #ffffff; 
-            text-transform: uppercase; 
-            font-size: 0.8rem; 
-            letter-spacing: 1.2px; 
-            color: #64748b; 
-            padding: 20px 25px; 
-            border-bottom: 2px solid #e2e8f0;
-        }
-        
-        /* Table Body (Reduced Spacing) */
-        .table tbody td { 
-            padding: 12px 25px; /* Reduced vertical padding */
-            border: none; 
-            font-size: 1rem; 
-        }
-        
-        /* Alternating Row Shades */
+        /* Table Styling for Desktop */
+        .table thead th { background: #fff; text-transform: uppercase; font-size: 0.75rem; color: #64748b; padding: 15px 20px; border-bottom: 2px solid #edf2f7; }
+        .table tbody td { padding: 12px 20px; border: none; font-size: 0.95rem; }
         .table tbody tr:nth-of-type(even) { background-color: #f8fafc; }
-        .table tbody tr:nth-of-type(odd) { background-color: #ffffff; }
-        .table tbody tr:hover { background-color: #f1f5f9; }
-
-        /* Data Styling */
         .bookmaker-name { font-weight: 700; color: #334155; }
-        .point-box { 
-            font-weight: 700; 
-            color: #2563eb; 
-            background: #eff6ff; 
-            padding: 3px 10px; 
-            border-radius: 4px; 
-            display: inline-block;
-            min-width: 45px;
-            text-align: center;
-        }
+        .point-box { font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; }
         .price-text { font-weight: 700; color: #10b981; }
+
+        /* MOBILE OPTIMIZATION: Transform Table to Cards */
+        @media (max-width: 767px) {
+            .table, .table thead, .table tbody, .table th, .table td, .table tr { display: block; }
+            .table thead { display: none; } /* Hide headers on mobile */
+            
+            .table tbody tr {
+                border-bottom: 1px solid #e2e8f0;
+                padding: 15px 10px;
+                position: relative;
+            }
+            
+            .table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 5px 10px !important;
+                text-align: right;
+            }
+
+            /* Add labels back via CSS content for mobile */
+            .table td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.7rem;
+                color: #94a3b8;
+                display: block;
+                text-align: left;
+            }
+
+            .bookmaker-name { color: #1e3a8a; font-size: 1.1rem; border-bottom: 1px dashed #e2e8f0; margin-bottom: 10px; padding-bottom: 5px !important; }
+            .bookmaker-name::before { content: "Bookmaker" !important; }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="odds-container">
-        <!-- JS will populate -->
-    </div>
+<div class="container-fluid">
+    <div id="odds-container"></div>
 </div>
 
 <script>
@@ -76,9 +72,7 @@
             container.innerHTML = ''; 
 
             data.forEach(game => {
-                const date = new Date(game.commence_time).toLocaleString([], { 
-                    weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                });
+                const date = new Date(game.commence_time).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
                 let html = `
                     <div class="card game-section">
@@ -86,41 +80,38 @@
                             <div class="matchup-text">${game.away_team} @ ${game.home_team}</div>
                             <div class="time-text">${date}</div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 25%">Bookmaker</th>
-                                        <th style="width: 35%">Team Selection</th>
-                                        <th style="width: 20%">Spread</th>
-                                        <th style="width: 20%">Price</th>
-                                    </tr>
-                                </thead>
-                                <tbody>`;
+                        <table class="table align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Bookmaker</th>
+                                    <th>Selection</th>
+                                    <th>Spread</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
                 game.bookmakers.forEach(bookie => {
-                    // Extracting the markets (usually spreads)
                     bookie.markets.forEach(market => {
                         market.outcomes.forEach((outcome, index) => {
                             html += `
                                 <tr>
-                                    <td class="bookmaker-name">${index === 0 ? bookie.title : ''}</td>
-                                    <td class="team-name">${outcome.name}</td>
-                                    <td><span class="point-box">${outcome.point > 0 ? '+' : ''}${outcome.point}</span></td>
-                                    <td class="price-text">${outcome.price}</td>
+                                    <td class="bookmaker-name" data-label="Bookmaker">${index === 0 ? bookie.title : ''}</td>
+                                    <td data-label="Team">${outcome.name}</td>
+                                    <td data-label="Spread"><span class="point-box">${outcome.point > 0 ? '+' : ''}${outcome.point}</span></td>
+                                    <td data-label="Price" class="price-text">${outcome.price}</td>
                                 </tr>`;
                         });
                     });
                 });
 
-                html += `</tbody></table></div></div>`;
+                html += `</tbody></table></div>`;
                 container.innerHTML += html;
             });
         } catch (e) {
-            container.innerHTML = `<div class="alert alert-danger">Unable to load data. Ensure the [JSON source](${url}) is accessible.</div>`;
+            container.innerHTML = `<div class="alert alert-danger">Error fetching data. Check [source](${url}).</div>`;
         }
     }
-
     window.onload = loadOdds;
 </script>
 
