@@ -1,0 +1,28 @@
+name: Odds Daily Fetch
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at 00:00 UTC
+  workflow_dispatch: # Allows you to run it manually for testing
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push changes
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch JSON data
+        env:
+          API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: curl -s "https://api.the-odds-api.com/v4/sports/americanfootball_nfl/odds/?apiKey=$API_KEY&regions=us&markets=spreads&oddsFormat=american" -o odds_daily.json
+
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: GitHub Action
+          message: "Update daily data"
+          add: "odds_daily.json"
+
