@@ -3,113 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile-First Odds Dashboard</title>
-    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    <title>NFL Odds Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f4f6f9; padding: 20px; font-family: system-ui, -apple-system, sans-serif; }
-        
-        .game-section { margin-bottom: 30px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: none; background: white; }
-        .section-header { background: #1e3a8a; color: white; padding: 15px 20px; }
-        .matchup-text { font-size: 1.1rem; font-weight: 700; }
-        .time-text { color: #cbd5e1; font-size: 0.85rem; }
+        :root {
+            --bg-main: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+        }
 
-        /* Table Styling for Desktop */
-        .table thead th { background: #fff; text-transform: uppercase; font-size: 0.75rem; color: #64748b; padding: 15px 20px; border-bottom: 2px solid #edf2f7; }
-        .table tbody td { padding: 12px 20px; border: none; font-size: 0.95rem; }
-        .table tbody tr:nth-of-type(even) { background-color: #f8fafc; }
-        .bookmaker-name { font-weight: 700; color: #334155; }
-        .point-box { font-weight: 700; color: #2563eb; background: #eff6ff; padding: 2px 8px; border-radius: 4px; }
-        .price-text { font-weight: 700; color: #10b981; }
+        body { 
+            background-color: var(--bg-main); 
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            padding: 24px 12px;
+            min-height: 100vh;
+        }
 
-        /* MOBILE OPTIMIZATION: Transform Table to Cards */
+        .dashboard-header {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Collapsible Styling */
+        .week-card {
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            background: var(--card-bg);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .week-toggle {
+            width: 100%;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: var(--text-main);
+            padding: 18px 24px;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.15rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .week-toggle:hover {
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+        }
+
+        .toggle-icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .week-toggle[aria-expanded="true"] .toggle-icon,
+        .bookmaker-toggle[aria-expanded="true"] .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .week-body {
+            padding: 16px;
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        /* Nested Bookmaker Accordion */
+        .bookmaker-card {
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            background: var(--card-bg);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .bookmaker-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .bookmaker-toggle {
+            width: 100%;
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 14px 20px;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .bookmaker-toggle:hover {
+            background: #334155;
+        }
+
+        /* Table Styling */
+        .odds-table {
+            margin-bottom: 0;
+            color: var(--text-main);
+            table-layout: fixed;
+            width: 100%;
+        }
+
+        .odds-table thead th {
+            background: #0f172a;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.725rem;
+            letter-spacing: 0.05em;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .odds-table tbody td {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            font-size: 0.925rem;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+
+        .odds-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .game-title {
+            font-weight: 700;
+            color: #f8fafc;
+            font-size: 1rem;
+        }
+
+        .at-symbol {
+            color: #38bdf8;
+            font-weight: 700;
+            margin: 0 4px;
+        }
+
+        .game-date {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+
+        /* Uniform Fixed Size Odds Box */
+        .odds-badge {
+            display: inline-grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            width: 145px;
+            height: 38px;
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 0 8px;
+            text-align: center;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .point-box {
+            font-weight: 700;
+            color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.12);
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .price-text {
+            font-weight: 700;
+            color: var(--accent-green);
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
+        .badge-count {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-blue);
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Mobile Adjustments */
         @media (max-width: 767px) {
-            .table, .table thead, .table tbody, .table th, .table td, .table tr { display: block; }
-            .table thead { display: none; } /* Hide headers on mobile */
+            .odds-table, .odds-table thead, .odds-table tbody, .odds-table th, .odds-table td, .odds-table tr { 
+                display: block; 
+                width: 100% !important;
+            }
+            .odds-table thead { display: none; }
             
-            .table tbody tr {
-                border-bottom: 1px solid #e2e8f0;
-                padding: 15px 10px;
-                position: relative;
+            .odds-table tbody tr {
+                border-bottom: 1px solid var(--card-border);
+                padding: 14px 12px;
             }
             
-            .table td {
+            .odds-table td {
+                padding: 8px 0 !important;
+                border: none !important;
                 display: flex;
                 justify-content: space-between;
-                padding: 5px 10px !important;
-                text-align: right;
+                align-items: center;
             }
 
-            /* Add labels back via CSS content for mobile */
-            .table td::before {
-                content: attr(data-label);
-                font-weight: 700;
-                text-transform: uppercase;
-                font-size: 0.7rem;
-                color: #94a3b8;
-                display: block;
+            .game-cell {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between !important;
+                align-items: center !important;
+                border-bottom: 1px dashed var(--card-border) !important;
+                padding-bottom: 10px !important;
+                margin-bottom: 8px;
+            }
+
+            .game-title {
                 text-align: left;
             }
 
-            .bookmaker-name { color: #1e3a8a; font-size: 1.1rem; border-bottom: 1px dashed #e2e8f0; margin-bottom: 10px; padding-bottom: 5px !important; }
-            .bookmaker-name::before { content: "Bookmaker" !important; }
+            .game-date {
+                text-align: right;
+                margin-top: 0;
+            }
+
+            .odds-table td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 0.75rem;
+                color: var(--text-muted);
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
+<div class="container-lg">
+    <div class="dashboard-header">
+        <h1 class="dashboard-title h2 mb-1">NFL Odds Dashboard</h1>
+        <p class="text-muted small mb-0">Grouped by NFL Week (Tue – Mon) & Bookmaker</p>
+    </div>
+
     <div id="odds-container"></div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+    function getWeekStartDate(d) {
+        const date = new Date(d);
+        const day = date.getDay(); // 0: Sun, 1: Mon, 2: Tue, ..., 6: Sat
+        const diff = (day - 2 + 7) % 7;
+        const tue = new Date(date);
+        tue.setDate(date.getDate() - diff);
+        tue.setHours(0, 0, 0, 0);
+        return tue;
+    }
+
+    function formatWeekHeader(tueDate) {
+        const monDate = new Date(tueDate);
+        monDate.setDate(tueDate.getDate() + 6);
+        const options = { month: 'short', day: 'numeric' };
+        return `Week of ${tueDate.toLocaleDateString([], options)} – ${monDate.toLocaleDateString([], options)}`;
+    }
+
     async function loadOdds() {
         const url = 'https://hooks.c4po.org/odds_daily.json';
         const container = document.getElementById('odds-container');
 
         try {
             const response = await fetch(url);
-            const data = await response.json();
+            const games = await response.json();
             container.innerHTML = ''; 
 
-            data.forEach(game => {
-                const date = new Date(game.commence_time).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            if (!games || games.length === 0) {
+                container.innerHTML = '<div class="alert alert-info bg-dark text-light border-secondary">No odds available.</div>';
+                return;
+            }
 
-                let html = `
-                    <div class="card game-section">
-                        <div class="section-header d-flex justify-content-between align-items-center">
-                            <div class="matchup-text">${game.away_team} @ ${game.home_team}</div>
-                            <div class="time-text">${date}</div>
-                        </div>
-                        <table class="table align-middle">
-                            <thead>
-                                <tr>
-                                    <th>Bookmaker</th>
-                                    <th>Selection</th>
-                                    <th>Spread</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
+            // Group by Week (Tuesday start) -> Bookmaker -> Games
+            const weeksMap = new Map();
 
-                game.bookmakers.forEach(bookie => {
-                    bookie.markets.forEach(market => {
-                        market.outcomes.forEach((outcome, index) => {
-                            html += `
-                                <tr>
-                                    <td class="bookmaker-name" data-label="Bookmaker">${index === 0 ? bookie.title : ''}</td>
-                                    <td data-label="Team">${outcome.name}</td>
-                                    <td data-label="Spread"><span class="point-box">${outcome.point > 0 ? '+' : ''}${outcome.point}</span></td>
-                                    <td data-label="Price" class="price-text">${outcome.price}</td>
-                                </tr>`;
-                        });
+            games.forEach(game => {
+                const commenceDate = new Date(game.commence_time);
+                const weekStart = getWeekStartDate(commenceDate);
+                const weekKey = weekStart.getTime();
+
+                if (!weeksMap.has(weekKey)) {
+                    weeksMap.set(weekKey, { weekStart, bookmakersMap: new Map() });
+                }
+                const weekData = weeksMap.get(weekKey);
+
+                (game.bookmakers || []).forEach(bookie => {
+                    const bookieKey = bookie.key || bookie.title;
+                    if (!weekData.bookmakersMap.has(bookieKey)) {
+                        weekData.bookmakersMap.set(bookieKey, { title: bookie.title, games: [] });
+                    }
+                    weekData.bookmakersMap.get(bookieKey).games.push({
+                        game,
+                        markets: bookie.markets
                     });
                 });
+            });
 
-                html += `</tbody></table></div>`;
-                container.innerHTML += html;
+            // Sort week keys chronologically
+            const sortedWeekKeys = Array.from(weeksMap.keys()).sort((a, b) => a - b);
+
+            let weekIndex = 0;
+            sortedWeekKeys.forEach(weekKey => {
+                const { weekStart, bookmakersMap } = weeksMap.get(weekKey);
+                weekIndex++;
+                const weekId = `week-collapse-${weekIndex}`;
+
+                let weekHtml = `
+                    <div class="week-card">
+                        <button class="week-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${weekId}" aria-expanded="false" aria-controls="${weekId}">
+                            <span>${formatWeekHeader(weekStart)}</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge-count">${bookmakersMap.size} Bookmaker${bookmakersMap.size > 1 ? 's' : ''}</span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                        </button>
+                        <div id="${weekId}" class="collapse week-body">`;
+
+                let bookieIndex = 0;
+                bookmakersMap.forEach(bookieData => {
+                    bookieIndex++;
+                    const bookieId = `${weekId}-bookie-${bookieIndex}`;
+
+                    weekHtml += `
+                        <div class="bookmaker-card">
+                            <button class="bookmaker-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#${bookieId}" aria-expanded="false" aria-controls="${bookieId}">
+                                <span>${bookieData.title}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge-count">${bookieData.games.length} Game${bookieData.games.length > 1 ? 's' : ''}</span>
+                                    <span class="toggle-icon">▼</span>
+                                </div>
+                            </button>
+                            <div id="${bookieId}" class="collapse">
+                                <table class="table odds-table align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50%;">Matchup / Date</th>
+                                            <th style="width: 25%; text-align: center;">Away Line</th>
+                                            <th style="width: 25%; text-align: center;">Home Line</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                    bookieData.games.forEach(({ game, markets }) => {
+                        const dateFormatted = new Date(game.commence_time).toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                        // Extract away & home outcomes from spreads market
+                        let awayOutcome = null;
+                        let homeOutcome = null;
+
+                        markets.forEach(market => {
+                            if (market.key === 'spreads' && market.outcomes) {
+                                awayOutcome = market.outcomes.find(o => o.name === game.away_team);
+                                homeOutcome = market.outcomes.find(o => o.name === game.home_team);
+                            }
+                        });
+
+                        const renderOddsBadge = (outcome) => {
+                            if (!outcome) return '<div class="odds-badge justify-content-center"><span class="text-muted small">N/A</span></div>';
+                            const ptStr = outcome.point > 0 ? `+${outcome.point}` : `${outcome.point}`;
+                            return `
+                                <div class="odds-badge">
+                                    <span class="point-box">${ptStr}</span>
+                                    <span class="price-text">${outcome.price}</span>
+                                </div>`;
+                        };
+
+                        weekHtml += `
+                            <tr>
+                                <td class="game-cell">
+                                    <div class="game-title">
+                                        <span>${game.away_team}</span> 
+                                        <span class="at-symbol">@</span> 
+                                        <span>${game.home_team}</span>
+                                    </div>
+                                    <div class="game-date">${dateFormatted}</div>
+                                </td>
+                                <td data-label="Away" style="text-align: center;">${renderOddsBadge(awayOutcome)}</td>
+                                <td data-label="Home" style="text-align: center;">${renderOddsBadge(homeOutcome)}</td>
+                            </tr>`;
+                    });
+
+                    weekHtml += `</tbody></table></div></div>`;
+                });
+
+                weekHtml += `</div></div>`;
+                container.innerHTML += weekHtml;
             });
         } catch (e) {
-            container.innerHTML = `<div class="alert alert-danger">Error fetching data. Check [source](${url}).</div>`;
+            console.error(e);
+            container.innerHTML = `<div class="alert alert-danger">Error fetching data. Check <a href="${url}">${url}</a>.</div>`;
         }
     }
     window.onload = loadOdds;
@@ -117,4 +430,3 @@
 
 </body>
 </html>
-
